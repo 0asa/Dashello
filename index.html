@@ -1,0 +1,88 @@
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.2.0/css/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.2.0/css/theme/blood.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://api.trello.com/1/client.js?key=__TRELLO_APPLICATION_KEY__"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.2.0/js/reveal.min.js"></script>
+
+    <style>
+        body { cursor: none; }
+        .reveal section img {
+            border: 0px solid #000;
+            background: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section data-autoslide="5000"></section>
+            <section>
+                <h2>Dashboard</h2>
+                <p>Something's wrong...</p>
+            </section>
+            <section data-autoslide="5000"></section>
+        </div>
+    </div>
+
+    <script>
+    var authenticationSuccess = function() { console.log("Successful authentication"); };
+    var authenticationFailure = function() { console.log("Failed authentication"); };
+
+    var successCall = function(data) {
+        $(".slides").empty();
+        $(".slides").append('<section data-autoslide="500"></section>');
+        $.each(data, function(key,value) {
+            $(".slides").append(
+                '<section id="'+value['id']+'"><h2>' + value['name'] + '</h2>' +
+                '<p>' + value['desc'] + '</p></section>'
+            );
+        });
+        $(".slides").append('<section data-autoslide="500"></section>');
+    };
+
+    Trello.authorize({
+      type: "redirect",
+      name: "Diagenode Dashboards",
+      scope: { read: true },
+      expiration: "never",
+      success: authenticationSuccess,
+      error: authenticationFailure
+    });
+
+    Trello.rest('GET','lists/__TRELLO_LIST_ID__/cards',{},successCall);
+
+    Reveal.initialize({
+        controls: false,
+        progress: true,
+        transition: 'none',
+        backgroundTransition: 'none',
+        autoSlide: 3000,
+        loop: true,
+        autoSlideStoppable: false,
+        width: 960,
+        height: 700,
+        margin: 0.05,
+        minScale: 0.2,
+        maxScale: 1.5,
+        parallaxBackgroundImage: '',
+        parallaxBackgroundSize: '',
+        parallaxBackgroundHorizontal: 0,
+        parallaxBackgroundVertical: 0
+    });
+
+    var refresher = 0;
+    Reveal.addEventListener( 'slidechanged', function( event ) {
+        if (Reveal.isLastSlide()) {
+            Reveal.togglePause();
+            Trello.rest('GET','lists/__TRELLO_LIST_ID__/cards',{},successCall);
+            if (refresher == 50) { location.reload(); }
+            Reveal.togglePause();
+            console.log(refresher);
+            refresher += 1;
+        }
+    });
+  </script>
+</body>
+</html>
